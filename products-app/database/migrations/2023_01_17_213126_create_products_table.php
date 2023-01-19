@@ -23,7 +23,6 @@ return new class extends Migration
             $table->string('description')->max(255)->nullable();
             $table->timestamps();
             $table->softDeletes();
-            $table->timestamps();
         });
     }
 

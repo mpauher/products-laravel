@@ -2,6 +2,9 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\AuthController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -17,3 +20,33 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+Route::get('/hello',function(){
+    return "Hello world";
+});
+
+//Registro de usuarios
+Route::post('/user/register', [UserController::class, 'register']);
+
+Route::group([
+
+    'middleware' => 'auth',
+    'prefix' => 'auth'
+
+], function ($router) {
+
+    Route::post('logout', [AuthController::class, 'logout']);
+    Route::post('refresh',[AuthController::class, 'refresh']);
+    Route::post('me', [AuthController::class, 'me']);
+    Route::get('hello', function () {
+        return "Hello World";
+    });
+});
+
+Route::group([
+    'prefix' => 'auth'
+], function () {
+    Route::post('login', [AuthController::class, 'login']);
+});
+
+
