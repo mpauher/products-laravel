@@ -97,7 +97,6 @@ class ProductController extends Controller
                 'error' => $e->getMessage()
             ],400);
         }
-
     }
 
     public function destroy($id){
@@ -121,6 +120,5 @@ class ProductController extends Controller
                 'error' => $e->getMessage()
             ],400);
         }
-
     }
 }
