@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\AuthController;
 
 
@@ -33,30 +34,47 @@ Route::group([
     Route::delete('/{id}', [UserController::class, 'destroy']);
 });
 
-//Products
-Route::group([
-    'prefix' => 'products'
-], function () {
-    Route::get('/', [ProductController::class, 'index']);
-    Route::get('/{id}', [ProductController::class, 'show']);
-    Route::post('/', [ProductController::class, 'create']);
-    Route::put('/{id}', [ProductController::class, 'update']);
-    Route::delete('/{id}', [ProductController::class, 'destroy']);
-});
-
 //Login 
-
 Route::post('login', [AuthController::class, 'login']);
 
-//Autenticación de usuarios
+//Protected routes
 Route::group([
     'middleware' => 'auth:api',
-    'prefix' => 'auth'
 ], function ($router) {
-    Route::post('logout', [AuthController::class, 'logout']);
-    Route::post('refresh',[AuthController::class, 'refresh']);
-    Route::post('me', [AuthController::class, 'me']);
+
+    //Autentication
+    Route::group([
+        'prefix' => 'auth'
+    ], function () {
+        Route::post('logout', [AuthController::class, 'logout']);
+        Route::post('refresh',[AuthController::class, 'refresh']);
+        Route::post('me', [AuthController::class, 'me']);
+    });
+
+    //Orders
+    Route::group([
+        'prefix' => 'orders'
+    ], function () {
+        Route::get('/', [OrderController::class, 'index']);
+        Route::get('/{id}', [OrderController::class, 'show']);
+        Route::post('/', [OrderController::class, 'create']);
+        Route::put('/{id}', [OrderController::class, 'update']);
+        Route::delete('/{id}', [OrderController::class, 'destroy']);
+        Route::get('/invoice/{id}', [OrderController::class, 'invoice']);
+    });
+
+    //Products
+    Route::group([
+        'prefix' => 'products'
+    ], function () {
+        Route::get('/', [ProductController::class, 'index']);
+        Route::get('/{id}', [ProductController::class, 'show']);
+        Route::post('/', [ProductController::class, 'create']);
+        Route::put('/{id}', [ProductController::class, 'update']);
+        Route::delete('/{id}', [ProductController::class, 'destroy']);
+    });
 });
+
 
 
 
