@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 use App\Models\Product;
+use App\Models\User;
 
 use Illuminate\Http\Request;
 
@@ -49,6 +50,17 @@ class ProductController extends Controller
 
     public function create(Request $request){
         try{
+            //Validate role            
+            $user_id = auth()->user()->id;
+            $user = User::find($user_id);
+
+            if($user->role != 1){
+                return response()->json([
+                    'error' => 'You do not have the right roles for this action'
+                ],404);
+            }
+            //-----------------------------
+
             $request->validate([
             'name'=>'required|string',
             'stock'=>'required|integer',
@@ -79,6 +91,17 @@ class ProductController extends Controller
 
     public function update($id, Request $request){
         try{
+            //Validate role            
+            $user_id = auth()->user()->id;
+            $user = User::find($user_id);
+
+            if($user->role != 1){
+                return response()->json([
+                    'error' => 'You do not have the right roles for this action'
+                ],404);
+            }
+            //-----------------------------
+
             $product = Product::find($id);
 
             if(!$product){
@@ -101,6 +124,17 @@ class ProductController extends Controller
 
     public function destroy($id){
         try {
+            //Validate role            
+            $user_id = auth()->user()->id;
+            $user = User::find($user_id);
+
+            if($user->role != 1){
+                return response()->json([
+                    'error' => 'You do not have the right roles for this action'
+                ],404);
+            }
+            //-----------------------------
+
             $product = Product::find($id);
 
             if(!$product){

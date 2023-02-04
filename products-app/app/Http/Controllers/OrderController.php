@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Order;
+use App\Models\User;
 use App\Models\Product;
 use App\Models\OrderProduct;
 use Carbon\Carbon;
@@ -34,6 +35,18 @@ class OrderController extends Controller
         try {
             $order = Order::find($id);
 
+            //Validate role            
+            $user_id = auth()->user()->id;
+            $user = User::find($user_id);
+
+            if($user->role != 1 && $order->user_id != $user_id){
+                echo($user->role);
+                return response()->json([
+                    'error' => 'You do not have the right roles for this action'
+                ],404);
+            }
+            //-----------------------------
+
             if(!$order){
                 return response()->json([
                     'error'=>'Order not found'
@@ -53,43 +66,53 @@ class OrderController extends Controller
 
     public function create(Request $request){
         try {
-            $reference = Str::random(10).'_'.Carbon::now();
-            $user_id = auth()->user()->id;
+            return DB::transaction(function () use ($request) {
+                $reference = Str::random(10).'_'.Carbon::now();
+                $user_id = auth()->user()->id;
 
-            $request->validate([
-                'items' => 'required|array'
-            ]);   
+                $request->validate([
+                    'items' => 'required|array'
+                ]);   
 
-            $order = Order::create([
-                'reference'=>$reference,
-                'user_id'=>$user_id,
-                'status'=> 3 //Default status (pendings order)
-            ]);
+                $order = Order::create([
+                    'reference'=>$reference,
+                    'user_id'=>$user_id,
+                    'status'=> 3 //Default status (pendings order)
+                ]);
 
-            $subtotal = 0;
-            $total = 0;
+                $subtotal = 0;
+                $total = 0;
 
-            foreach($request->items as $item){
-                $product = Product::find($item['product_id']);
-                
-                if($item['quantity'] <= $product->stock){
-                    $price = Product::find($item['product_id'])->price;
-                    $orderProduct = OrderProduct::create([
-                        'order_id' => $order->id,
-                        'product_id' => $item['product_id'],
-                        'quantity' => $item['quantity'],
-                        'price' => $product->price
-                    ]);
+                foreach($request->items as $item){
+                    $product = Product::find($item['product_id']);
+                    
+                    if($item['quantity'] <= $product->stock){
+                        $price = Product::find($item['product_id'])->price;
+                        $orderProduct = OrderProduct::create([
+                            'order_id' => $order->id,
+                            'product_id' => $item['product_id'],
+                            'quantity' => $item['quantity'],
+                            'price' => $product->price
+                        ]);
 
-                    $subtotal += ($product->price * $orderProduct->quantity);
-                } 
-            }
-    
-            $total += ($subtotal * 1.19);
-            $order->total = $total;
-            $order->subtotal = $subtotal;
-            $order->save();
+                        $subtotal += ($product->price * $orderProduct->quantity);
+                    } else {
+                        DB::rollBack();
+                        return response()->json([
+                            'error'=>'Product quantity not enough',
+                        ],404);
+                    }
+                }
+        
+                $total += ($subtotal * 1.19);
+                $order->total = $total;
+                $order->subtotal = $subtotal;
+                $order->save();
 
+                return response()->json([
+                    'message' => 'Order created succesfully',
+                ],200);
+            },5);
         }catch (\Exception $e) {
             return response()->json([
                 "error" => $e->getMessage()
@@ -99,6 +122,17 @@ class OrderController extends Controller
 
     public function update($id, Request $request){
         try{
+            //Validate role            
+            $user_id = auth()->user()->id;
+            $user = User::find($user_id);
+
+            if($user->role != 1){
+                return response()->json([
+                    'error' => 'You do not have the right roles for this action'
+                ],404);
+            }
+            //-----------------------------
+
             $order = Order::find($id);
 
             if(!$order){
@@ -109,15 +143,24 @@ class OrderController extends Controller
 
             $order->update($request->all());  
 
-            if($order->status == 1){
-                $orderProducts = OrderProduct::where('order_id',$id)->get();
-
-                foreach ($orderProducts as $orderProduct) {
-                    $product = Product::where('id',$orderProduct->product_id)->first();
-                    $product->stock -= $orderProduct->quantity;
-                    $product->save();
+            if($order->isDirty('status')){
+                if($order->status == 1){
+                    $orderProducts = OrderProduct::where('order_id',$id)->get();
+    
+                    foreach ($orderProducts as $orderProduct) {
+                        $product = Product::where('id',$orderProduct->product_id)->first();
+                        if($product->stock >= $orderProduct->quantity){
+                            $product->stock -= $orderProduct->quantity;
+                            $product->save();
+                        } else {
+                            DB::rollBack();
+                            return response()->json([
+                                'error'=>'Product quantity not enough',
+                            ],404);
+                        }
+                    }
                 }
-            }              
+            }                         
 
             return response()->json([
                 'message' => 'Order update succesfully',
@@ -131,6 +174,17 @@ class OrderController extends Controller
 
     public function delete($id){
         try {
+            //Validate role            
+            $user_id = auth()->user()->id;
+            $user = User::find($user_id);
+
+            if($user->role != 1){
+                return response()->json([
+                    'error' => 'You do not have the right roles for this action'
+                ],404);
+            }
+            //-----------------------------
+
             $order = Order::find($id);
 
             if(!$order){
