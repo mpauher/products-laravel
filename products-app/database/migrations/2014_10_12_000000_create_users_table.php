@@ -18,7 +18,6 @@ return new class extends Migration
             $table->string('name');
             $table->string('lastname');
             $table->integer('role')->nullable();
-            $table->string('username')->unique();
             $table->string('email')->unique();
             $table->string('password');
             $table->timestamps();
