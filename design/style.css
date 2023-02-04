@@ -17,3 +17,10 @@ a {
 .card{
     box-shadow: 1px 1px 15px gray;
 }
+
+#admincode {
+    display:none;
+}
+#form2Example33:checked ~ #admincode {
+    display:block;
+}
