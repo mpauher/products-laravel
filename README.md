@@ -27,9 +27,9 @@ Development of an application for a store that has two types of user: role and a
 
         php artisan key:generate
 
-5. Run the database migrations
+5. Run the database migrations, and faker data to Users and Products
 
-        php artisan migrate
+        php artisan migrate --seed
 
 6. Start the local development server
 
