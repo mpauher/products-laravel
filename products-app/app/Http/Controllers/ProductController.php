@@ -51,10 +51,10 @@ class ProductController extends Controller
     public function create(Request $request){
         try{
             //Validate role            
-            $user_id = auth()->user()->id;
-            $user = User::find($user_id);
+            $user_token_id = auth()->user()->id;
+            $user_token = User::find($user_token_id);
 
-            if($user->role != 1){
+            if($user_token->role != 1){
                 return response()->json([
                     'error' => 'You do not have the right roles for this action'
                 ],404);
@@ -92,10 +92,10 @@ class ProductController extends Controller
     public function update($id, Request $request){
         try{
             //Validate role            
-            $user_id = auth()->user()->id;
-            $user = User::find($user_id);
+            $user_token_id = auth()->user()->id;
+            $user_token = User::find($user_token_id);
 
-            if($user->role != 1){
+            if($user_token->role != 1){
                 return response()->json([
                     'error' => 'You do not have the right roles for this action'
                 ],404);
@@ -125,10 +125,10 @@ class ProductController extends Controller
     public function destroy($id){
         try {
             //Validate role            
-            $user_id = auth()->user()->id;
-            $user = User::find($user_id);
+            $user_token_id = auth()->user()->id;
+            $user_token = User::find($user_token_id);
 
-            if($user->role != 1){
+            if($user_token->role != 1){
                 return response()->json([
                     'error' => 'You do not have the right roles for this action'
                 ],404);
