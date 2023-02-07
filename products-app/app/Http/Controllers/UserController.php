@@ -14,7 +14,6 @@ class UserController extends Controller
                 'name' =>'required|string',
                 'lastname' =>'required|string',
                 'email' =>'required|string',
-                'username' =>'required|string',
                 'password' =>'required|string',
             ]);
 
@@ -22,7 +21,6 @@ class UserController extends Controller
                 'name' => $request->name,
                 'lastname' => $request->lastname,
                 'email' => $request->email,
-                'username' => $request->username,
                 'password' => Hash::make($request->password),
             ]);
 
@@ -35,7 +33,7 @@ class UserController extends Controller
             }
 
             return response()->json([
-               'message' =>'Usuario creado exitosamente'
+               'message' =>'User created successfully'
             ],201);
 
         } catch (\Exception $e) {
@@ -86,12 +84,33 @@ class UserController extends Controller
 
     public function update($id, Request $request){
         try {
+            //Validate role
+            $user_token_id = auth()->user()->id;
+            $user_token = User::find($user_token_id);
+
+            if($user_token->role != 1 && $id != $user_token_id){
+                return response()->json([
+                    'error' => 'You do not have the right roles for this action'
+                ],404);
+            }
+            // --------------------
+
             $user = User::find($id);
+            $users = User::all();
+
 
             if(!$user){
                 return response()->json([
                     'error' => 'User not found'
                 ],404);
+            }
+
+            foreach($users as $user){
+                if($user->email == $request->email){
+                    return response()->json([
+                        'error' => 'Email address must be unique'
+                    ],404);
+                }
             }
 
             $user->update($request->all());
