@@ -27,15 +27,19 @@ Development of an application for a store that has two types of user: role and a
 
         php artisan key:generate
 
-5. Run the database migrations, and faker data to Users and Products
+5. Generate a jwt key
+
+        php artisan jwt:secret
+
+6. Run the database migrations, and faker data to Users and Products
 
         php artisan migrate --seed
 
-6. Start the local development server
+7. Start the local development server
 
         php artisan serve
 
-7. Visit http://localhost:8000 to check.
+8. Visit http://localhost:8000 to check.
 
 ### Optionals files
 
