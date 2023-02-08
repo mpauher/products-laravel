@@ -9,6 +9,7 @@ use App\Models\Product;
 use App\Models\OrderProduct;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
@@ -140,7 +141,7 @@ class OrderController extends Controller
                 ],404);
             }
 
-            $order->update($request->all());  
+            $order->status = $request->status;
 
             if($order->isDirty('status')){
                 if($order->status == 1){
@@ -159,7 +160,9 @@ class OrderController extends Controller
                         }
                     }
                 }
-            }                         
+            } 
+            
+            $order->update($request->all());              
 
             return response()->json([
                 'message' => 'Order update succesfully',
@@ -207,7 +210,24 @@ class OrderController extends Controller
 
     public function invoice($id){
         try {
-            $invoice = OrderProduct::select('product_id','price','quantity')->where('order_id',$id)->get();
+            $rows = OrderProduct::select('product_id','price','quantity')->where('order_id',$id)->get();
+
+            $invoice = array();
+            $total = 0;
+
+            foreach($rows as $row){
+                $row = ((object)[
+                    'product_id' => $row->product_id,
+                    'price' => $row->price,
+                    'quantity' => $row->quantity,
+                    'subtotal' => $row['quantity'] * $row['price']
+                ]);
+                $total += $row->subtotal;
+                array_push($invoice, $row);
+            }
+
+            array_push($invoice,"Total invoice: {$total}");
+            
             return response()->json([
                 'invoice' => $invoice
             ],200);
