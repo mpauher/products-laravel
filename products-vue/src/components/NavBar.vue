@@ -73,7 +73,7 @@
               data-bs-toggle="dropdown"
               aria-expanded="false"
               ><img
-                src="profile.png"
+                src="../assets/profile.png"
                 class="rounded-circle"
                 height="25"
                 alt="Black and White Portrait of a Man"
